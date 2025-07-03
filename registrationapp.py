@@ -1,6 +1,5 @@
 import streamlit as st
-import math
-import random          # NEW – for shuffling and randint
+import math, random
 from pathlib import Path
 
 # ───────────────────────────────────────────
@@ -8,7 +7,7 @@ from pathlib import Path
 # ───────────────────────────────────────────
 PASSWORD       = "AgenticAndRobotic"
 CARDS_PER_PAGE = 4
-TOTAL_CARDS    = random.randint(18, 26)      # NEW – 18-26 cards each run
+TOTAL_CARDS    = random.randint(18, 26)     # 18-26 cards each run
 
 # ───────────────────────────────────────────
 #  Dummy-data pools (26 items each)
@@ -32,12 +31,11 @@ COMPANIES = [
 ]
 ROLES        = ["Software Engineer","Data Scientist","Automation Architect",
                 "Business Analyst","Product Manager","DevOps Engineer"]
-TICKET_TYPES = ["Standard","VIP","Speaker"]
+TICKET_TYPES = ["Standard","Silver","Gold"]
 
 # ───────────────────────────────────────────
-#  Build a **random** participant list
+#  Build a **randomised** participant list
 # ───────────────────────────────────────────
-# Shuffle each attribute list independently to randomise pairings
 random.shuffle(FIRST_NAMES)
 random.shuffle(LAST_NAMES)
 random.shuffle(COMPANIES)
@@ -59,7 +57,26 @@ for i in range(TOTAL_CARDS):
 TOTAL_PAGES = math.ceil(TOTAL_CARDS / CARDS_PER_PAGE)
 
 # ───────────────────────────────────────────
-#  Helper functions (unchanged except comments)
+#  One-time CSS (labels & values inline)
+# ───────────────────────────────────────────
+def add_css_once() -> None:
+    if "css_added" in st.session_state:
+        return
+    st.session_state.css_added = True
+    st.markdown(
+        """
+        <style>
+        .card       {border:1px solid #DDD;border-radius:6px;padding:12px;margin-bottom:16px}
+        .field      {display:flex;gap:6px;margin-bottom:4px}
+        .label      {font-weight:700;min-width:100px}
+        .value      {flex:1;word-break:break-word}
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+# ───────────────────────────────────────────
+#  Helper functions
 # ───────────────────────────────────────────
 def show_logo() -> None:
     logo = Path("uipath_logo.png")
@@ -88,14 +105,30 @@ def login_page() -> None:
             st.error("Invalid credentials, please try again.")
 
 def participant_card(person: dict) -> None:
+    """Each value is its own <span class='value ...' data-column='…'> for UiPath."""
     st.markdown(
         f"""
-        <div style="border:1px solid #DDD;border-radius:6px;padding:12px;margin-bottom:16px">
-            <strong>Name:</strong> {person['name']}<br>
-            <strong>Company:</strong> {person['company']}<br>
-            <strong>Role:</strong> {person['role']}<br>
-            <strong>Email:</strong> {person['email']}<br>
-            <strong>Ticket type:</strong> {person['ticket_type']}
+        <div class="card" role="row">
+          <div class="field">
+            <span class="label">Name:</span>
+            <span class="value name" data-column="name">{person['name']}</span>
+          </div>
+          <div class="field">
+            <span class="label">Company:</span>
+            <span class="value company" data-column="company">{person['company']}</span>
+          </div>
+          <div class="field">
+            <span class="label">Role:</span>
+            <span class="value role" data-column="role">{person['role']}</span>
+          </div>
+          <div class="field">
+            <span class="label">Email:</span>
+            <span class="value email" data-column="email">{person['email']}</span>
+          </div>
+          <div class="field">
+            <span class="label">Ticket type:</span>
+            <span class="value ticket" data-column="ticket_type">{person['ticket_type']}</span>
+          </div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -103,13 +136,14 @@ def participant_card(person: dict) -> None:
 
 def participants_page() -> None:
     st.title("Conference Participants")
+    add_css_once()
 
     start = (st.session_state.page - 1) * CARDS_PER_PAGE
     end   = start + CARDS_PER_PAGE
     for p in participants[start:end]:
         participant_card(p)
 
-    # Pagination controls (bottom-center)
+    # Pagination controls
     col_left, col_mid, col_right = st.columns([1, 2, 1])
 
     with col_left:
