@@ -89,7 +89,7 @@ def show_robot_icon() -> None:
 
 def login_page() -> None:
     show_robot_icon()
-    st.title("UiPath Fusion App")
+    st.title("Event Registration App")
     st.subheader("Log in")
     st.write("Enter your user name and password to log in.")
     user = st.text_input("User name", key="user")
