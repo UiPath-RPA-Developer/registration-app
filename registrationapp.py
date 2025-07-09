@@ -63,7 +63,7 @@ def add_css() -> None:
         <style>
           table.participants{width:100%;border-collapse:separate;border-spacing:0 16px;}
           tr.card{
-            background:#fff;
+            background:transparent;
             border:1px solid #ddd;            /* single outer outline              */
             border-radius:6px;overflow:hidden;
           }
